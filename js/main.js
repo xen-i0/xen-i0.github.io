@@ -1,51 +1,36 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const contactForm = document.getElementById('contact-form');
-    const formStatus = document.getElementById('form-status');
 
-    if (contactForm) {
-        contactForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            // Get inputs
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const message = document.getElementById('message').value;
+const contactForm = document.getElementById('contact-form');
+const statusMsg = document.getElementById('form-status');
 
-            // Simple Sanitization: Remove any HTML tags to prevent XSS
-            const sanitize = (str) => {
-                const temp = document.createElement('div');
-                temp.textContent = str;
-                return temp.innerHTML;
-            };
+contactForm.addEventListener('submit', async function(event) {
+    event.preventDefault();
+    
+    const data = new FormData(event.target);
+    statusMsg.innerHTML = "[...] SENDING SIGNAL...";
+    statusMsg.style.color = "var(--text)";
 
-            const cleanData = {
-                name: sanitize(name),
-                email: sanitize(email),
-                message: sanitize(message)
-            };
-
-            // Status message
-            formStatus.textContent = "Sending...";
-            formStatus.style.color = "var(--text-secondary)";
-
-            try {
-                const response = await fetch(contactForm.action, {
-                    method: 'POST',
-                    body: JSON.stringify(cleanData),
-                    headers: { 'Accept': 'application/json' }
-                });
-
-                if (response.ok) {
-                    formStatus.textContent = "Message sent successfully!";
-                    formStatus.style.color = "var(--accent)";
-                    contactForm.reset();
+    fetch(event.target.action, {
+        method: contactForm.method,
+        body: data,
+        headers: {
+            'Accept': 'application/json'
+        }
+    }).then(response => {
+        if (response.ok) {
+            statusMsg.innerHTML = "[SUCCESS] SIGNAL RECEIVED. STATUS: 200 OK";
+            statusMsg.style.color = "var(--accent)";
+            contactForm.reset();
+        } else {
+            response.json().then(data => {
+                if (Object.hasOwn(data, 'errors')) {
+                    statusMsg.innerHTML = data["errors"].map(error => error["message"]).join(", ");
                 } else {
-                    throw new Error();
+                    statusMsg.innerHTML = "[ERROR] TRANSMISSION FAILED. STATUS: 500";
                 }
-            } catch (err) {
-                formStatus.textContent = "Oops! There was a problem sending your message.";
-                formStatus.style.color = "red";
-            }
-        });
-    }
+            })
+        }
+    }).catch(error => {
+        statusMsg.innerHTML = "[ERROR] NETWORK INTERRUPTED. CHECK CONNECTION.";
+        statusMsg.style.color = "#ff5f56";
+    });
 });
