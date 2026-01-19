@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flag - Pwnable.kr Writeup | Xenonia</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav>
+        <div class="container nav-flex">
+            <div class="logo">XENONIA_RE</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="blog.html">Blog</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <article class="container" style="padding: 60px 0;">
+        <header style="margin-bottom: 40px;">
+            <h1 style="color: var(--accent); font-size: 2.5rem;">Flag [Pwn] - Pwnable.kr</h1>
+            <p style="color: var(--dim-text);">Pwnable / Reverse Engineering | September 15, 2023</p>
+        </header>
+
+        <section class="post-content">
+            <p><strong>Description:</strong> "Papa brought me a packed present! let's open it." <br>
+            This challenge from Pwnable.kr is a straightforward reversing task where the primary goal is to handle a packed binary.</p>
+
+            <div class="image-placeholder">
+                <img src="assets/images/flag1.png" alt="Checking binary for UPX signature">
+                <p class="caption">Terminal: Identifying the UPX packer signature</p>
+            </div>
+
+            <h2 class="section-label">Step 1: Identifying the Packer</h2>
+            <p>Following the hint in the description about a "packed present," I checked the binary for common packing signatures. Running <code>strings</code> or checking headers confirms that the binary is packed with <strong>UPX</strong>.</p>
+
+            <div class="image-placeholder">
+                <img src="assets/images/flag2.png" alt="Checking binary for UPX signature">
+                <p class="caption">Terminal: Identifying the UPX packer signature</p>
+            </div>
+
+            <h2 class="section-label">Step 2: Unpacking the Present</h2>
+            <p>Since the binary is packed, we cannot perform standard static analysis or disassembly yet. We must use the UPX utility to unpack it first.</p>
+            
+            <pre class="terminal-body">$ upx -d flag</pre>
+
+            <div class="image-placeholder">
+                <img src="assets/images/flag3.png" alt="Unpacking the pwnable binary">
+                <p class="caption">Decompressing the executable to its original state</p>
+            </div>
+
+            <h2 class="section-label">Step 3: Disassembly and Flag Extraction</h2>
+            <p>Once the binary is unpacked, it becomes readable. I prefer using <strong>Radare2</strong> for disassembly. After loading the binary and analyzing it, we can look for where the flag is being handled in the data segment or being copied into memory.</p>
+
+            
+            <div class="image-placeholder">
+                <img src="assets/images/flag4.png" alt="Unpacking the pwnable binary">
+                <p class="caption">disassemble</p>
+            </div>
+
+            <p>By inspecting the code near the <code>main</code> or <code>flag</code> related functions, we can see the flag string clearly defined.</p>
+
+            <div class="terminal-container" style="margin-top: 40px;">
+                <div class="terminal-body" style="color: var(--terminal-green); text-align: center;">
+                    <strong>FLAG: UPX...? sounds like a delivery service :)</strong>
+                </div>
+            </div>
+
+            <h2 class="section-label" style="margin-top: 40px;">Conclusion</h2>
+            <p>This challenge is a great reminder that the first step in any reversing task should be identifying if the binary is packed or obfuscated. UPX is a common packer that can be easily defeated once identified.</p>
+        </section>
+
+        <div style="margin-top: 60px;">
+            <a href="blog.html" class="btn-block" style="text-decoration: none; display: inline-block; width: auto; padding: 10px 30px;">&larr; Return to Archive</a>
+        </div>
+    </article>
+
+    <footer>
+        <p>&copy; 2026. Security Research Archive.</p>
+    </footer>
+</body>
+</html>

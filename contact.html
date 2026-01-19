@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact | xenon</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav>
+        <div class="container nav-flex">
+            <div class="logo">XENON</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="blog.html">Blog</a></li>
+                <li><a href="contact.html" style="color: var(--accent);">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <header style="margin: 60px 0 30px 0;">
+            <h1 class="section-label">Connect</h1>
+            <p style="color: var(--dim-text);">Reach out for collaborations, security research inquiries, or just to say hello.</p>
+        </header>
+
+        <section class="terminal-container">
+            <div class="terminal-header">
+                <div class="btns"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+                <div class="title">xen@localhost: ~/contact</div>
+            </div>
+            <div class="terminal-body">
+                <form id="contact-form" action="https://formspree.io/f/YOUR_ID_HERE" method="POST">
+                    <div class="form-group">
+                        <label for="name" class="p">NAME:</label>
+                        <input type="text" id="name" name="name" placeholder="identity..." required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email" class="p">EMAIL:</label>
+                        <input type="email" id="email" name="email" placeholder="email@address.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message" class="p">MESSAGE:</label>
+                        <textarea id="message" name="message" rows="6" placeholder="Type your signal here..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-block">SEND_SIGNAL</button>
+                    <div id="form-status" style="margin-top: 15px; font-weight: bold;"></div>
+                </form>
+            </div>
+        </section>
+
+        <div class="social-links" style="display: flex; gap: 20px; justify-content: center; margin-top: 20px;">
+            <a href="https://github.com/xenonia8086" class="p" style="text-decoration: none;">[ GITHUB ]</a>
+            <a href="#" class="p" style="text-decoration: none;">[ TWITTER/X ]</a>
+            <a href="#" class="p" style="text-decoration: none;">[ LINKEDIN ]</a>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026. Security Research Archive.</p>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

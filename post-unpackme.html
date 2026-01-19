@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UnpackMe Writeup | xenon </title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav>
+        <div class="container nav-flex">
+            <div class="logo">XENON</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="blog.html">Blog</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <article class="container" style="padding: 60px 0;">
+        <header style="margin-bottom: 40px;">
+            <h1 style="color: var(--accent); font-size: 2.5rem;">UnpackMe - PicoCTF</h1>
+            <p style="color: var(--dim-text);">Reverse Engineering | September 2023</p>
+        </header>
+
+        <section class="post-content">
+            <p><strong>Challenge:</strong> Can you get the flag? Reverse engineer this binary.<br>
+            <strong>Hint:</strong> What is UPX?</p>
+
+            <h2 class="section-label" style="margin-top: 40px;">Initial Research</h2>
+            <p>The challenge hint points toward <strong>UPX (Ultimate Packer for eXecutables)</strong>. UPX is a free, open-source tool used to pack (compress) and decompress executable files. Before we can analyze the binary logic, we need to unpack it.</p>
+            
+            <p>If you don't have it installed, you can get it via apt:</p>
+            <pre class="terminal-body" style="background: #000; color: #fff;">$ sudo apt install upx</pre>
+            <p>You can learn more about the technical details at the official site: <a href="https://upx.github.io/" style="color: var(--accent);">upx.github.io</a></p>
+
+            <h2 class="section-label">Step 1: Decompressing the Binary</h2>
+            <p>First, we need to restore the packed executable to its original state using the <code>-d</code> (decompress) flag.</p>
+            
+            <div class="image-placeholder">
+                <img src="assets/images/upx1.png" alt="Decompressing binary with UPX">
+                <p class="caption">Terminal: Running upx -d on the binary</p>
+            </div>
+
+            <h2 class="section-label">Step 2: Disassembly</h2>
+            <p>Now that the binary is unpacked, we can disassemble or decompile it. For this challenge, I used <strong>Radare2</strong> to analyze the assembly code.</p>
+
+            <div class="image-placeholder">
+                <img src="assets/images/upx2.png" alt="Radare2 disassembly output">
+                <p class="caption">Analyzing the main function in Radare2</p>
+            </div>
+
+            <div class="image-placeholder">
+                <img src="assets/images/upx3.png" alt="Radare2 disassembly output">
+                <p class="caption">Analyzing the main function in Radare2</p>
+            </div>
+            <p>Looking at the disassembled code, we can identify three critical points:</p>
+            <ul>
+                <li><strong>0x00401e9c:</strong> The program prints a prompt asking for my "favorite number."</li>
+                <li><strong>0x00401ec0:</strong> It takes user input using the <code>scanf</code> function.</li>
+                <li><strong>0x00401ec8:</strong> The program compares our input integer against the hex value <code>0xb83cb</code>.</li>
+            </ul>
+
+            <h2 class="section-label">Step 3: Finding the Flag</h2>
+            <p>We need to convert that hex value (<code>0xb83cb</code>) into a decimal integer to provide the correct input.</p>
+
+            <div class="image-placeholder">
+                <img src="assets/images/upx4.png" alt="Hex to Decimal conversion">
+                <p class="caption">Converting 0xb83cb to Decimal</p>
+            </div>
+
+            <p>After converting, we get the decimal value. When we run the program and enter this integer as input, it provides the flag.</p>
+
+            <div class="image-placeholder">
+                <img src="assets/images/upx5.png" alt="Receiving the flag">
+                <p class="caption">Success: The program prints the flag</p>
+            </div>
+
+            <div class="terminal-container" style="margin-top: 40px;">
+                <div class="terminal-body" style="color: var(--terminal-green); text-align: center;">
+                    <strong>FLAG: picoCTF{up><_m3_f7w_5769b54e}</strong>
+                </div>
+            </div>
+
+            <h2 class="section-label" style="margin-top: 40px;">Conclusion</h2>
+            <p>This challenge is an excellent introduction to how binary packing works. It demonstrates that while compression makes a file smaller and harder to read initially, a simple <code>upx -d</code> command is often all it takes to start a deep-dive analysis.</p>
+        </section>
+
+        <div style="margin-top: 60px;">
+            <a href="blog.html" class="btn-block" style="text-decoration: none; display: inline-block; width: auto; padding: 10px 30px;">&larr; Return to Archive</a>
+        </div>
+    </article>
+
+    <footer>
+       <p>&copy; 2026. Security Research Archive.</p>
+    </footer>
+</body>
+</html>

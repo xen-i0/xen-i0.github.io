@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home | xenon</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav>
+        <div class="container nav-flex">
+            <div class="logo">XENON</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="blog.html">Blog</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="container">
+            <img src="assets/images/profile.jpg" alt="Profile" class="profile-pic">
+           
+            <p class="tagline">xenon | Application Security Researcher</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="terminal-container">
+            <div class="terminal-header">
+                <div class="btns"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+                <div class="title">xen@localhost: ~</div>
+            </div>
+            <div class="terminal-body">
+                <p><span class="p">$</span> whoami</p>
+                <p>I am an application security researcher focused on Web Exploitation,Developing Security framework and tools for red team operations.</p>
+                <p><span class="p">$</span> <span class="cursor">_</span></p>
+            </div>
+        </section>
+          <section class="project-spotlight">
+              <h2 class="section-label"> Project</h2>
+              <div class="spotlight-card">
+                  <div class="spotlight-content">
+                      <div class="spotlight-header">
+                          <span class="status-dot"></span>
+                          <span class="project-name">XenC2 Framework</span>
+                      </div>
+                      <p class="project-desc">
+                          XenC2 is a custom-built Command & Control (C2) infrastructure project designed for research in post-exploitation and remote administration. It focuses on lightweight agent communication, encrypted traffic, and modular command execution.
+                      </p>
+                      <div class="spotlight-actions">
+                          <a href="https://xen-i0.github.io/xenc2/" class="btn-block spotlight-btn" target="_blank">
+                              View Project Documentation <span>&nearr;</span>
+                          </a>
+                          <a href="https://github.com/xen-i0/xenc2" class="github-link">Source Code</a>
+                      </div>
+                  </div>
+              </div>
+          </section>
+
+        
+        <h2 class="section-label">Featured Writeups</h2>
+
+        <div class="blog-grid">
+            <a href="post-disassemble.html" class="blog-card">
+                <img src="assets/images/diss9.png" alt="Stripped Binary Analysis">
+                <div class="card-info">
+                    <h3>Stripped Binary Analysis</h3>
+                    <p>Strategies for disassembling and debugging binaries when metadata and function names are removed.</p>
+                </div>
+            </a>
+
+            
+
+          <section id="contact" class="contact-section">
+            <h2 class="section-label">Contact</h2>
+            <form id="contact-form">
+                <input type="text" placeholder="Name" required>
+                <input type="email" placeholder="Email" required>
+                <textarea placeholder="Message" rows="5" required></textarea>
+                <button type="submit" class="btn-block">Execute</button>
+            </form>
+        </section>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026. Security Research Archive.</p>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

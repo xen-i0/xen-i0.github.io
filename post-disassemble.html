@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disassembling Stripped Binaries | xenon </title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav>
+        <div class="container nav-flex">
+            <div class="logo">XENON</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="blog.html">Blog</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <article class="container" style="padding: 60px 0;">
+        <header style="margin-bottom: 40px;">
+            <h1 style="color: var(--accent); font-size: 2.5rem;">Analyzing Stripped Binaries</h1>
+            <p style="color: var(--dim-text);">Reverse Engineering | September 10, 2023</p>
+        </header>
+
+        <section class="post-content">
+            <p>A <strong>stripped binary</strong> is a program compiled with a flag (like <code>-s</code> in GCC) that tells the compiler to discard debugging symbols. This makes reverse engineering more difficult because we lose the mapping between machine code and the original function names or variables.</p>
+
+            <p>Debuggers like GDB typically rely on two main mechanisms:</p>
+            <ul>
+                <li><strong>Debug Information:</strong> Mapping between source code and machine instructions.</li>
+                <li><strong>Symbol Table:</strong> Associating functions and variables with their memory addresses.</li>
+            </ul>
+
+
+
+            <p>Without these, GDB will often report: <code>No symbol table is loaded.</code> Here is how we bypass that to find a password in a stripped test binary.</p>
+            <p><b>I have created some c program for test purpose which is stripped.</b></p>
+
+              <div class="image-placeholder">
+                <img src="assets/images/diss1.png" alt="GDB no symbol table error">
+                <p class="caption">info and workflow</p>
+            </div>
+            <h2 class="section-label">Step 1: The Symbol Obstacle</h2>
+            <p>When we first open the stripped program in GDB and try to list functions or disassemble <code>main</code>, the debugger fails because it doesn't know where <code>main</code> starts.</p>
+
+            <div class="image-placeholder">
+                <img src="assets/images/diss2.png" alt="GDB no symbol table error">
+                <p class="caption">GDB</p>
+            </div>
+
+           
+
+            <h2 class="section-label">Step 2: Finding the Entry Point</h2>
+            <p>Since we can't find <code>main</code> by name, we need to find the <strong>Entry Point</strong>. We can do this by running the program or using the <code>info file</code> command in GDB to locate the entry address.</p>
+
+             <div class="image-placeholder">
+                <img src="assets/images/diss3.png" alt="GDB no symbol table error">
+                <p class="caption">GDB</p>
+            </div>
+            <h2 class="section-label">Step 3: Setting Breakpoints by Address</h2>
+            <p>Once we have the address, we set a breakpoint at that location. To see the code, we disassemble from that address forward. For example, disassembling 200 instructions from the entry point gives us a clear view of the program's execution flow.</p>
+
+               <div class="image-placeholder">
+                <img src="assets/images/diss4.png" alt="GDB no symbol table error">
+                <p class="caption">set brekapoint</p>
+            </div>
+
+               <div class="image-placeholder">
+                <img src="assets/images/diss5.png" alt="GDB no symbol table error">
+                <p class="caption">forward 200 instructions</p>
+            </div>
+
+            <h2 class="section-label">Step 4: Analyzing the Logic</h2>
+            <p>Looking at the disassembled code, we look for string comparisons or jump instructions. In this specific binary:</p>
+            <div class="image-placeholder">
+                <img src="assets/images/diss6.png" alt="GDB no symbol table error">
+                <p class="caption">disassemble</p>
+            </div>
+            <ul>
+                <li><strong>0x555555555234:</strong> The program checks if the input string length is equal to <strong>12</strong>.</li>
+                <li><strong>0x55555555524d:</strong> It compares our input to an unknown hardcoded string.</li>
+                <li><strong>puts function:</strong> Depending on the comparison result, it prints "Welcome" or "Wrong password."</li>
+            </ul>
+
+            <h2 class="section-label">Step 5: Extracting the Password</h2>
+            <p>By setting a breakpoint exactly at the comparison address (<code>0x55555555524d</code>), we can inspect the registers or the stack to see what our input is being compared against.</p>
+
+            <div class="image-placeholder">
+                <img src="assets/images/diss7.png" alt="Setting breakpoint at comparison address">
+                <p class="caption">Inspecting memory at the comparison jump</p>
+            </div>
+
+            <div class="image-placeholder">
+                <img src="assets/images/diss9.png" alt="Setting breakpoint at comparison address">
+                <p class="caption">find the vaue in memory</p>
+            </div>
+
+             <div class="image-placeholder">
+                <img src="assets/images/diss8.png" alt="Setting breakpoint at comparison address">
+                <p class="caption">try password</p>
+            </div>
+
+            <h2 class="section-label" style="margin-top: 40px;">Conclusion</h2>
+            <p>Even without a symbol table, the logic of the binary remains the same. By finding the entry point and following the assembly flow to comparison jumps, we can recover secrets from stripped programs just as effectively as from standard ones.</p>
+        </section>
+
+        <div style="margin-top: 60px;">
+            <a href="blog.html" class="btn-block" style="text-decoration: none; display: inline-block; width: auto; padding: 10px 30px;">&larr; Return to Archive</a>
+        </div>
+    </article>
+
+    <footer>
+        <p>&copy; 2026. Security Research Archive.</p>
+    </footer>
+</body>
+</html>
