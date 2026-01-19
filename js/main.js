@@ -1,43 +1,45 @@
 document.addEventListener('DOMContentLoaded', () => {
-    
-    // Function to handle the actual logic
-    async function setupForm(formId, statusId) {
-        const form = document.getElementById(formId);
-        const statusMsg = document.getElementById(statusId);
+    const handleSubmission = async (event) => {
+        event.preventDefault();
+        
+        const form = event.target;
+        const data = new FormData(form);
+        const status = document.getElementById('home-status') || document.getElementById('form-status');
 
-        // If this form isn't on the current page, skip it
-        if (!form || !statusMsg) return;
+        if (status) {
+            status.innerHTML = "[...] SENDING SIGNAL...";
+            status.style.color = "var(--text)";
+        }
 
-        form.addEventListener('submit', async function(event) {
-            event.preventDefault();
-            
-            const data = new FormData(event.target);
-            statusMsg.innerHTML = "[...] SENDING SIGNAL...";
-            statusMsg.style.color = "var(--text)";
-
-            fetch(event.target.action, {
+        try {
+            const response = await fetch(form.action, {
                 method: 'POST',
                 body: data,
-                headers: {
-                    'Accept': 'application/json'
-                }
-            }).then(response => {
-                if (response.ok) {
-                    statusMsg.innerHTML = "[SUCCESS] SIGNAL RECEIVED. STATUS: 200 OK";
-                    statusMsg.style.color = "var(--accent)";
-                    form.reset();
-                } else {
-                    statusMsg.innerHTML = "[ERROR] TRANSMISSION FAILED. STATUS: 500";
-                    statusMsg.style.color = "#ff5f56";
-                }
-            }).catch(error => {
-                statusMsg.innerHTML = "[ERROR] NETWORK INTERRUPTED.";
-                statusMsg.style.color = "#ff5f56";
+                headers: { 'Accept': 'application/json' }
             });
-        });
-    }
 
-    // Initialize both possible forms
-    setupForm('contact-form', 'form-status');      // For contact.html
-    setupForm('home-contact-form', 'home-status'); // For index.html
+            if (response.ok) {
+                if (status) {
+                    status.innerHTML = "[SUCCESS] SIGNAL RECEIVED. STATUS: 200 OK";
+                    status.style.color = "var(--accent)";
+                }
+                form.reset();
+            } else {
+                if (status) {
+                    status.innerHTML = "[ERROR] TRANSMISSION FAILED.";
+                    status.style.color = "#ff5f56";
+                }
+            }
+        } catch (error) {
+            if (status) {
+                status.innerHTML = "[ERROR] NETWORK INTERRUPTED.";
+                status.style.color = "#ff5f56";
+            }
+        }
+    };
+
+    const allForms = document.querySelectorAll('form');
+    allForms.forEach(f => {
+        f.addEventListener('submit', handleSubmission);
+    });
 });
