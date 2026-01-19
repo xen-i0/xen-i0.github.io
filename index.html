@@ -74,13 +74,14 @@
 
             
 
-          <section id="contact" class="contact-section">
-            <h2 class="section-label">Contact</h2>
-            <form id="contact-form">
-                <input type="text" placeholder="Name" required>
-                <input type="email" placeholder="Email" required>
-                <textarea placeholder="Message" rows="5" required></textarea>
+         <section id="contact" class="contact-section">
+            <h2 class="section-label">Quick Contact</h2>
+            <form id="home-contact-form" action="https://formspree.io/f/your_unique_id" method="POST">
+                <input type="text" name="name" placeholder="Name" required>
+                <input type="email" name="_replyto" placeholder="Email" required>
+                <textarea name="message" placeholder="Message" rows="5" required></textarea>
                 <button type="submit" class="btn-block">Execute</button>
+                <div id="home-status" style="margin-top: 10px; font-size: 14px;"></div>
             </form>
         </section>
         </div>
