@@ -394,3 +394,16 @@ footer {
         width: 100%;
     }
 }
+
+}
+
+.logo a {
+    text-decoration: none;
+    color: var(--white); /* Or your specific logo color */
+    transition: 0.3s;
+}
+
+.logo a:hover {
+    color: var(--accent); /* Changes color when you hover over it */
+    text-shadow: 0 0 8px var(--accent); /* Optional: adds a terminal glow effect */
+}
