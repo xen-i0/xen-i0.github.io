@@ -407,3 +407,34 @@ footer {
     color: var(--accent); /* Changes color when you hover over it */
     text-shadow: 0 0 8px var(--accent); /* Optional: adds a terminal glow effect */
 }
+
+.social-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    color: var(--dim-text);
+    text-decoration: none;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    border: 1px solid #333; /* Dark border by default */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* The Hover State */
+.social-link:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.1); /* Subtle tinted background */
+    box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.4);
+    transform: translateY(-2px);
+}
+
+.social-link i {
+    font-size: 1.2rem;
+}
+
+.link-text {
+    letter-spacing: 1px;
+}
