@@ -278,9 +278,10 @@ Thus we need to invoke SetValue using the same "Dynamic Delegate" pattern you us
     <div><span style="color: #9cdcfe;">$del</span> = [<span style="color: #4ec9b0;">System.Runtime.InteropServices.Marshal</span>]::GetDelegateForFunctionPointer(<span style="color: #9cdcfe;">$h</span>, [<span style="color: #4ec9b0;">Action</span>])</div>
     <div><span style="color: #9cdcfe;">$del</span>.Invoke()</div>
 </div>
+            <p></p>
                
                
-<h3>Summary</h3>
+<h2 class="section-label">Reflective Memory Injection</h2>
             <p>The whole research from original_sql_srv.ps1 (Detected) to the final version (Evaded) confirms the power of Advanced Reflective Memory Injection. that by the final stage, we able to evade a obfuscated powershell stager within legitimate-looking .NET operations + calling methods at runtime. This approach effectively bypasses defender engines their heuristic security models.</p>
 
 
