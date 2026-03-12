@@ -438,3 +438,77 @@ footer {
 .link-text {
     letter-spacing: 1px;
 }
+
+/* Container styling for the list */
+.tool-list {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+    font-family: 'Fira Code', 'JetBrains Mono', 'Source Code Pro', monospace;
+}
+
+/* Base style for all list items */
+.tool-list li {
+    background-color: #111;
+    margin-bottom: 12px;
+    padding: 15px 20px;
+    border-radius: 4px;
+    border-left: 3px solid #333;
+    color: #d4d4d4;
+    transition: all 0.3s ease;
+    line-height: 1.6;
+}
+
+/* Hover effect for the entire row if it contains a link */
+.tool-list li:has(.cyber-link):hover {
+    background-color: #1a1a1a;
+    border-left: 3px solid #00ff00;
+}
+
+/* Link styling - Replacing the blue */
+.cyber-link {
+    color: #00ff00;
+    text-decoration: none;
+    font-weight: 600;
+    position: relative;
+    display: inline-block;
+}
+
+/* Blinking cursor effect on hover */
+.cyber-link:hover {
+    text-shadow: 0 0 8px rgba(0, 255, 0, 0.4);
+}
+
+.cyber-link::after {
+    position: absolute;
+    right: -12px;
+    opacity: 0;
+    color: #00ff00;
+}
+
+.cyber-link:hover::after {
+    animation: blink 1s step-end infinite;
+    opacity: 1;
+}
+
+/* Dimmer text for the descriptions to make the green link stand out */
+.tool-list .desc {
+    color: #888;
+}
+
+/* Styling for the non-link items so they look cohesive but distinct */
+.tool-list .text-only {
+    border-left: 3px solid #444;
+}
+
+.tool-list .text-only::before {
+    color: #555;
+}
+
+/* Cursor animation */
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+
