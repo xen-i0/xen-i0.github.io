@@ -280,12 +280,12 @@ Thus we need to invoke SetValue using the same "Dynamic Delegate" pattern you us
 </div>
                
                
-
+<h3>Summary</h3>
             <p>The whole research from original_sql_srv.ps1 (Detected) to the final version (Evaded) confirms the power of Advanced Reflective Memory Injection. that by the final stage, we able to evade a obfuscated powershell stager within legitimate-looking .NET operations + calling methods at runtime. This approach effectively bypasses defender engines their heuristic security models.</p>
 
 
              <div style="background-color: #252526; border-left: 4px solid #007acc; padding: 15px 20px; margin: 30px 0; border-radius: 0 4px 4px 0; color: #cccccc; font-size: 0.95rem; line-height: 1.6;">
-                Most of AMSI detections are based on behavior patterns rather then signatures. So, even if you change the string or the method name, if the behavior of the script matches a known malicious pattern (like calling SetValue on a field named amsiInitFailed), it can still be flagged. since they analyzes at runtime by the time the strings are reconstructed. they may likely flagged it as malicious. This is why we had to go beyond just obfuscating strings and also change how we invoke methods to truly evade detection.
+                Most of AMSI detections are based on behavior patterns rather than signatures. So, even if you change the string or the method name or obfuscate with a various techniques, if the behavior of the script matches a known malicious pattern (like calling SetValue on a field named amsiInitFailed), it can still be flagged. since they analyzes at runtime by the time the strings are reconstructed. This is why we had to go beyond just obfuscating strings and also change how we invoke methods to truly evade detection.
 </div>
 
         
