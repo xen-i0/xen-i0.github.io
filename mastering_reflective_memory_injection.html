@@ -45,7 +45,7 @@
 
             <p><b>Matching and Analysis </b>: If the static signature matches a known threat, the file is blocked. If the signature is unknown but looks "sus" (e.g., high entropy or sus functions like VirtualAlloc), Defender often flags it as a "Trojan" or "Backdoor" based on its heuristic model or behavior.</p>
 
-            <p><b>Automatic Sample Submission</b>: If a file is flagged as suspicious, it may be automatically submitted to Microsoft's cloud for further analysis. For most of windows systems, this is done automatically. But as a researcher, you might want to turn off auto sample submission.</p>
+            <p><b>Automatic Sample Submission</b>: If a file is flagged as suspicious, it may be automatically submitted to Microsoft's cloud for further analysis. For most of windows systems, this is done automatically. But as a researcher, we might want to turn off auto sample submission.</p>
 
             <div class="image-placeholder">
                 <img src="assets/images/auto_sample_submission.png" alt="Auto Sample Submission">
@@ -157,7 +157,7 @@
             <p>We confirmed either we concatenate/reverse the strings or use hex encoding, but the AMSI engine still flags it. because it analyses the context of the code. so lets move on to <b>Runtime Integrated Memory Injection.</b></p>
 
                 <ul>
-            <p><li><b>Assembly Enumeration (GetAssemblies())</b>: Instead of importing System.Management.Automation (which the EDR monitors as a high-risk indicator), you are querying the AppDomain for already-loaded assemblies. because querying existing memory is a legitimate runtime task. It avoids triggering the Assembly Load event</li></p>
+            <p><li><b>Assembly Enumeration (GetAssemblies())</b>: Instead of importing System.Management.Automation (which the EDR monitors as a high-risk indicator), we are querying the AppDomain for already-loaded assemblies. because querying existing memory is a legitimate runtime task. It avoids triggering the Assembly Load event</li></p>
 
             <div style="background-color: #1e1e1e; padding: 20px; border-radius: 8px; font-family: 'Consolas', 'Monaco', monospace; line-height: 1.5; color: #d4d4d4; border: 1px solid #3c3c3c; overflow-x: auto; margin: 20px 0;">
     <div><span style="color: #9cdcfe;">$Assemblies</span> = [<span style="color: #4ec9b0;">AppDomain</span>]::CurrentDomain.GetAssemblies()</div>
@@ -173,7 +173,7 @@
     <div>}</div>
 </div>
 
-            <p><li><b>Hijacking UnsafeNativeMethods</b>: You are tapping into an internal class used by the CLR to bridge managed code (PowerShell) to unmanaged code (Windows API).</li></p>
+            <p><li><b>Hijacking UnsafeNativeMethods</b>: We are tapping into an internal class used by the CLR to bridge managed code (PowerShell) to unmanaged code (Windows API).</li></p>
 
            <div style="background-color: #252526; border-left: 4px solid #007acc; padding: 15px 20px; margin: 30px 0; border-radius: 0 4px 4px 0; color: #cccccc; font-size: 0.95rem; line-height: 1.6;">
     <strong style="color: #ffffff; display: block; margin-bottom: 5px; font-style: normal;">Managed vs. Unmanaged Code</strong>
@@ -193,7 +193,7 @@
 </div>
 </div>
 
-              <p><li><b>Marshal::GetDelegateForFunctionPointer</b>: the engine cannot see a link between our script and the VirtualProtect call because you are invoking it through a generic function pointer, masking the call path.</li></p>
+              <p><li><b>Marshal::GetDelegateForFunctionPointer</b>: the engine cannot see a link between our script and the VirtualProtect call because we are invoking it through a generic function pointer, masking the call path.</li></p>
           
 
             <div style="background-color: #1e1e1e; padding: 20px; border-radius: 8px; font-family: 'Consolas', 'Monaco', monospace; line-height: 1.5; color: #d4d4d4; border: 1px solid #3c3c3c; overflow-x: auto; margin: 20px 0;">
@@ -206,8 +206,8 @@
                 <img src="assets/images/injection_part.png" alt="Injection Part">
             </div>
 
-            <p>The latest scan triggered at 0x419 because, despite our pointer resolution approach, the static signature of the SetValue action still existed in the file.The problem is even though you hex-encoded the string, the method call SetValue is a static keyword in the script.
-Thus we need to invoke SetValue using the same "Dynamic Delegate" pattern you used for VirtualProtect. By stripping the keyword SetValue from the stager source</p>
+            <p>The latest scan triggered at 0x419 because, despite our pointer resolution approach, the static signature of the SetValue action still existed in the file.The problem is even though we hex-encoded the string, the method call SetValue is a static keyword in the script.
+Thus we need to invoke SetValue using the same "Dynamic Delegate" pattern we used for VirtualProtect. By stripping the keyword SetValue from the stager source</p>
             
 
              <h2 class="section-label">Indirect Method Invocation</h2>
