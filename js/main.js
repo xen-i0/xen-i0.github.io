@@ -20,19 +20,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 if (status) {
-                    status.innerHTML = "[SUCCESS] SIGNAL RECEIVED. STATUS: 200 OK";
+                    status.innerHTML = "[SUCCESS] Message Sent.";
                     status.style.color = "var(--accent)";
                 }
                 form.reset();
             } else {
                 if (status) {
-                    status.innerHTML = "[ERROR] TRANSMISSION FAILED.";
+                    status.innerHTML = "[ERROR] Message Failed.";
                     status.style.color = "#ff5f56";
                 }
             }
         } catch (error) {
             if (status) {
-                status.innerHTML = "[ERROR] NETWORK INTERRUPTED.";
+                status.innerHTML = "[ERROR] Network Error.";
                 status.style.color = "#ff5f56";
             }
         }
